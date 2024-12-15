@@ -1,26 +1,27 @@
 import { Group, Title, Select, Button } from "@mantine/core";
 import { IconPlayerPlay, IconLoader2 } from '@tabler/icons-react';
+import { CompilerType } from '../services/compilerService';
 
 interface HeaderProps {
-  language: string;
-  onLanguageChange: (value: string | null) => void;
+  compiler: CompilerType;
+  onCompilerChange: (value: string | null) => void;
   onCompile: () => void;
   isCompiling: boolean;
 }
 
-export function Header({ language, onLanguageChange, onCompile, isCompiling }: HeaderProps) {
+export function Header({ compiler, onCompilerChange, onCompile, isCompiling }: HeaderProps) {
   return (
     <Group justify="space-between">
       <Title order={3}>C/C++ Online Compiler</Title>
       <Group>
         <Select
-          value={language}
-          onChange={(value) => onLanguageChange(value)}
+          value={compiler}
+          onChange={onCompilerChange}
           data={[
-            { value: "cpp", label: "C++ (G++ 8.5.0)" },
-            { value: "c", label: "C (GCC 8.5.0)" },
+            { value: "g++", label: "C++ (G++ 8.5.0)" },
+            { value: "gcc", label: "C (GCC 8.5.0)" },
           ]}
-          placeholder="Select language"
+          placeholder="Select compiler"
           disabled={isCompiling}
         />
         <Button 

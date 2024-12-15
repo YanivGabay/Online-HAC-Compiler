@@ -1,3 +1,11 @@
+export type CompilerType = 'gcc' | 'g++';
+
+interface CompilationRequest {
+  code: string;
+  compiler: CompilerType;
+  stdin: string;
+}
+
 interface CompilationResult {
   success: boolean;
   compilationOutput: string;
@@ -5,17 +13,20 @@ interface CompilationResult {
   error?: string;
 }
 
-export async function compileAndRun(code: string, language: string): Promise<CompilationResult> {
+export async function compileAndRun(code: string, compiler: CompilerType, stdin: string): Promise<CompilationResult> {
   try {
+    const requestData: CompilationRequest = {
+      code,
+      compiler,
+      stdin,
+    };
+
     const response = await fetch('your-backend-url/compile', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        code,
-        language,
-      }),
+      body: JSON.stringify(requestData),
     });
 
     if (!response.ok) {
