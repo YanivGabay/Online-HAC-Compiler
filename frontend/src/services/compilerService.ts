@@ -13,6 +13,8 @@ interface CompilationResult {
   error?: string;
 }
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
+
 export async function compileAndRun(code: string, compiler: CompilerType, stdin: string): Promise<CompilationResult> {
   try {
     const requestData: CompilationRequest = {
@@ -21,7 +23,7 @@ export async function compileAndRun(code: string, compiler: CompilerType, stdin:
       stdin,
     };
 
-    const response = await fetch('your-backend-url/compile', {
+    const response = await fetch(`${BACKEND_URL}/compile`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
