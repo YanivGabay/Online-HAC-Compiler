@@ -6,31 +6,33 @@ import { Header } from "./components/Header";
 import { CodeEditor } from "./components/CodeEditor";
 import { OutputPanel } from "./components/OutputPanel";
 import { Footer } from "./components/Footer";
-import { compileAndRun, CompilerType } from "./services/compilerService";
+import { compileAndRun, CompilerType, CompilationStatus } from "./services/compilerService";
 
 export default function App() {
-  const [code, setCode] = useState("#include <iostream>\n\nint main() {\n    std::cout << \"Hello, World!\" << std::endl;\n    return 0;\n}");
-  const [compiler, setCompiler] = useState<CompilerType>('g++');
-  const [stdin, setStdin] = useState("");
-  const [compileOutput, setCompileOutput] = useState("");
-  const [programOutput, setProgramOutput] = useState("");
+  const [code, setCode] = useState('');
+  const [stdin, setStdin] = useState('');
+  const [compiler, setCompiler] = useState<CompilerType>('gcc');
   const [isCompiling, setIsCompiling] = useState(false);
+  const [result, setResult] = useState<CompilationStatus | null>(null);
 
   const handleCompile = async () => {
-    setIsCompiling(true);
-    setCompileOutput("Compiling...");
-    setProgramOutput("");
-
     try {
-      const result = await compileAndRun(code, compiler, stdin);
-      
-      setCompileOutput(result.compilationOutput);
-      if (result.success && result.programOutput) {
-        setProgramOutput(result.programOutput);
-      }
+      setIsCompiling(true);
+      setResult(null);
+
+      const status = await compileAndRun(code, compiler, stdin);
+      setResult(status);
+
     } catch (error) {
-      setCompileOutput(error instanceof Error ? error.message : 'An error occurred');
-      setProgramOutput("");
+      setResult({
+        requestId: '',
+        status: 'failed',
+        result: {
+          success: false,
+          compilationOutput: 'Error occurred',
+          error: error instanceof Error ? error.message : 'Unknown error'
+        }
+      });
     } finally {
       setIsCompiling(false);
     }
@@ -78,16 +80,20 @@ export default function App() {
             <Group grow align="flex-start">
               <OutputPanel
                 title="Compilation Output"
-                content={compileOutput}
+                content={result?.result?.compilationOutput}
                 placeholder="No compilation messages"
                 isError={true}
                 loading={isCompiling}
+                status={result?.status}
+                output={result?.result}
               />
               <OutputPanel
                 title="Program Output"
-                content={programOutput}
+                content={result?.result?.programOutput}
                 placeholder="Program hasn't been run yet"
                 loading={isCompiling}
+                status={result?.status}
+                output={result?.result}
               />
             </Group>
           </Stack>

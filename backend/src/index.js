@@ -5,6 +5,8 @@ const { json } = pkg;
 import fetch from 'node-fetch';
 import { config } from './config.js';
 import { limiter } from './middleware/rateLimiter.js';
+import { compilationManager } from './services/compilationManager.js';
+import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
 app.use(cors());
@@ -16,38 +18,53 @@ app.post('/compile', async (req, res) => {
   const { code, compiler, stdin } = req.body;
 
   if (!code || !compiler) {
-    return res.status(400).json({ success: false, error: 'Code and compiler are required.' });
+    return res.status(400).json({ 
+      success: false, 
+      error: 'Code and compiler are required.' 
+    });
   }
 
   if (!['gcc', 'g++'].includes(compiler)) {
-    return res.status(400).json({ success: false, error: 'Unsupported compiler type. Use "gcc" or "g++".' });
+    return res.status(400).json({ 
+      success: false, 
+      error: 'Unsupported compiler type. Use "gcc" or "g++".' 
+    });
   }
 
   try {
-    console.log('Attempting to reach compiler at:', config.COMPILER_URL);
-    const response = await fetch(`${config.COMPILER_URL}/compile`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code, compiler, stdin }),
+    // Create and queue the compilation request
+    const request = compilationManager.createRequest(code, compiler, stdin);
+    
+    // Return the request ID immediately
+    res.json({
+      success: true,
+      requestId: request.requestId,
+      message: 'Compilation request queued'
     });
-
-    if (!response.ok) {
-      const text = await response.text();
-      console.error('Compiler service error:', text);
-      return res.status(response.status).json({ success: false, error: text });
-    }
-
-    const result = await response.json();
-    return res.json(result);
 
   } catch (error) {
     console.error('Backend error:', error);
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       error: error.message || 'Unknown backend error'
     });
   }
 });
+
+// Add endpoint to check compilation status
+app.get('/status/:requestId', (req, res) => {
+  const status = compilationManager.getStatus(req.params.requestId);
+  if (!status) {
+    return res.status(404).json({
+      success: false,
+      error: 'Compilation request not found'
+    });
+  }
+  res.json(status);
+});
+
+// Add error handling middleware last
+app.use(errorHandler);
 
 app.listen(config.PORT, () => {
   console.log(`Backend running on port ${config.PORT}`);
