@@ -4,10 +4,13 @@ import pkg from 'body-parser';
 const { json } = pkg;
 import fetch from 'node-fetch';
 import { config } from './config.js';
+import { limiter } from './middleware/rateLimiter.js';
 
 const app = express();
 app.use(cors());
 app.use(json());
+
+app.use('/compile', limiter);
 
 app.post('/compile', async (req, res) => {
   const { code, compiler, stdin } = req.body;
