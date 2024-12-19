@@ -14,7 +14,7 @@ interface CompilationResult {
 }
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
-
+console.log('BACKEND_URL:', import.meta.env.VITE_BACKEND_URL);
 export async function compileAndRun(code: string, compiler: CompilerType, stdin: string): Promise<CompilationResult> {
   try {
     const requestData: CompilationRequest = {

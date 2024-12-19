@@ -1,33 +1,19 @@
 services:
   frontend:
     build: ./frontend
-    image: my-compiler-frontend
-    container_name: frontend
     ports:
       - "3000:80"
-    environment:
-      - VITE_BACKEND_URL=${VITE_BACKEND_URL}
     depends_on:
       - backend
-    # ... rest of the services remain the same
 
   backend:
     build: ./backend
-    image: my-compiler-backend
-    container_name: backend
-    # Backend runs on port 3001
     ports:
       - "3001:3001"
-    environment:
-      # Backend will call the compiler service by this hostname and port
-      COMPILER_URL: "http://compiler:3002"
     depends_on:
       - compiler
 
   compiler:
     build: ./compiler
-    image: my-compiler-service
-    container_name: compiler
-    # Compiler service runs on port 3002
     ports:
       - "3002:3002"

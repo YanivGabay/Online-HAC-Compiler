@@ -130,3 +130,6 @@ dist
 .pnp.*
 
 .DS_Store
+
+# Docker environment variable files
+.env.docker

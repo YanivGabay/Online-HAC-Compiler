@@ -16,8 +16,6 @@ COPY . .
 # Install dependencies
 RUN yarn install --frozen-lockfile
 
-
-
 # Build the app
 RUN yarn build
 
@@ -26,9 +24,6 @@ FROM nginx:alpine
 
 # Copy built assets from build stage
 COPY --from=build /app/dist /usr/share/nginx/html
-
-# Copy nginx config (if you have custom config)
-# COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose port 80
 EXPOSE 80
