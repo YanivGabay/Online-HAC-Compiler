@@ -9,7 +9,7 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-const MEMORY_LIMIT = 1024 * 1024; // 1MB output limit
+const MEMORY_LIMIT = 50 * 1024; // Reduce to 50KB for stricter limit
 
 const cleanup = (filename) => {
   try {
@@ -39,6 +39,7 @@ app.post('/compile', (req, res) => {
   const filename = compiler === 'gcc' ? 'program.c' : 'program.cpp';
   fs.writeFileSync(filename, code);
 
+  // First compile the program
   exec(`${compiler} -Wall ${filename} -o program`, (compileErr, _, compileStderr) => {
     if (compileErr) {
       cleanup(filename);
@@ -51,51 +52,70 @@ app.post('/compile', (req, res) => {
 
     const execOptions = {
       timeout: 5000,
-      maxBuffer: MEMORY_LIMIT
+      maxBuffer: MEMORY_LIMIT,
+      killSignal: 'SIGTERM'
     };
 
-    const runProcess = exec(`./program`, execOptions, (runErr, runStdout, runStderr) => {
-      // Always cleanup after execution
+    let outputBuffer = '';
+    let errorBuffer = '';
+    const runProcess = exec(`./program`, execOptions);
+    
+    // Collect stdout
+    runProcess.stdout.on('data', (data) => {
+      outputBuffer += data;
+      if (outputBuffer.length > MEMORY_LIMIT) {
+        runProcess.kill('SIGTERM');
+      }
+    });
+
+    // Collect stderr
+    runProcess.stderr.on('data', (data) => {
+      errorBuffer += data;
+    });
+
+    // Handle process completion
+    runProcess.on('exit', (code, signal) => {
       cleanup(filename);
-
-      // Check for memory limit exceeded
-      if (runErr && runErr.code === 'ENOBUFS') {
+      
+      // Case 1: Memory Limit Exceeded
+      if (outputBuffer.length > MEMORY_LIMIT) {
         return res.json({
           success: false,
-          compilationOutput: compileStderr || 'Compilation successful',
-          programOutput: 'Program output exceeded 1MB limit',
-          error: 'Memory Limit Exceeded (MLE) - Output was too large'
+          compilationOutput: '⚠️ Program terminated - Memory limit exceeded',
+          programOutput: `${outputBuffer.slice(0, 200)}...\n\n⛔ Program stopped: Output exceeded the 50KB limit`,
+          error: 'Your program generated too much output (>50KB). Try reducing the amount of output.'
         });
       }
 
-      // Check for timeout
-      if (runErr && runErr.signal === 'SIGTERM') {
+      // Case 2: Time Limit Exceeded
+      if (signal === 'SIGTERM') {
         return res.json({
           success: false,
-          compilationOutput: compileStderr || 'Compilation successful',
-          programOutput: 'Program execution timed out after 5 seconds',
-          error: 'Time Limit Exceeded (TLE) - Program took too long to execute'
+          compilationOutput: '⚠️ Program terminated - Time limit exceeded',
+          programOutput: `${outputBuffer}\n\n⛔ Program stopped: Exceeded the 5-second time limit`,
+          error: 'Your program took too long to execute (>5 seconds). Check for infinite loops or optimize your code.'
         });
       }
 
-      // Check for other runtime errors
-      if (runErr) {
+      // Case 3: Runtime Error
+      if (code !== 0) {
         return res.json({
           success: false,
-          compilationOutput: compileStderr || 'Compilation successful',
-          programOutput: runStdout || '',
-          error: `Runtime error: ${runStderr}`
+          compilationOutput: '⚠️ Program terminated - Runtime error occurred',
+          programOutput: outputBuffer,
+          error: errorBuffer || 'Program crashed or exited with an error. Check for segmentation faults, array out of bounds, etc.'
         });
       }
 
-      // Successful execution
+      // Case 4: Successful Execution
       res.json({
         success: true,
-        compilationOutput: compileStderr || 'Compilation successful',
-        programOutput: runStdout || 'Program executed successfully (no output)'
+        compilationOutput: '✅ Program compiled and executed successfully',
+        programOutput: outputBuffer || '(Program executed successfully but produced no output)'
       });
     });
 
+    // Handle stdin if provided
     if (stdin) {
       runProcess.stdin.write(stdin);
       runProcess.stdin.end();
@@ -106,3 +126,4 @@ app.post('/compile', (req, res) => {
 app.listen(config.PORT, () => {
   console.log(`Compiler service running on port ${config.PORT}`);
 });
+
