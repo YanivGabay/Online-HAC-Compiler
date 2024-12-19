@@ -32,17 +32,19 @@ app.post('/compile', (req, res) => {
     }
 
     const runProcess = exec(`./program`, { timeout: 5000 }, (runErr, runStdout, runStderr) => {
-      if (runErr) {
-        if (runErr.signal === 'SIGTERM') {
-          return res.json({
-            success: false,
-            compilationOutput: compileStderr || 'No compilation errors',
-            error: 'Program timed out'
-          });
-        }
+      if (runErr && runErr.signal === 'SIGTERM') {
         return res.json({
-          success: true,
-          compilationOutput: compileStderr || 'No compilation errors',
+          success: false,
+          compilationOutput: compileStderr || 'Compilation successful',
+          programOutput: 'Program execution timed out after 5 seconds',
+          error: 'Time Limit Exceeded (TLE) - Program took too long to execute'
+        });
+      }
+
+      if (runErr) {
+        return res.json({
+          success: false,
+          compilationOutput: compileStderr || 'Compilation successful',
           programOutput: runStdout || '',
           error: `Runtime error: ${runStderr}`
         });
@@ -50,8 +52,8 @@ app.post('/compile', (req, res) => {
 
       res.json({
         success: true,
-        compilationOutput: compileStderr || 'No compilation errors',
-        programOutput: runStdout
+        compilationOutput: compileStderr || 'Compilation successful',
+        programOutput: runStdout || 'Program executed successfully (no output)'
       });
     });
 
