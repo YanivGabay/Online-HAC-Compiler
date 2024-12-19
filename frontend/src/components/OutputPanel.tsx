@@ -7,18 +7,13 @@ interface OutputPanelProps {
   loading?: boolean;
   isError?: boolean;
   status?: 'queued' | 'compiling' | 'completed' | 'failed';
-  output?: {
-    success: boolean;
-    compilationOutput: string;
-    programOutput?: string;
-    error?: string;
-  };
 }
 
-export function OutputPanel({ title, content, placeholder, loading, isError, status, output }: OutputPanelProps) {
+export function OutputPanel({ title, content, placeholder, loading, isError, status }: OutputPanelProps) {
   const getDisplayText = () => {
     if (status === 'queued') return 'Waiting in queue...';
     if (status === 'compiling') return 'Compiling...';
+    if (status === 'failed' && !content) return 'Execution failed';
     if (!content) return placeholder;
     return content;
   };

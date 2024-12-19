@@ -4,6 +4,7 @@ import { exec } from 'child_process';
 import fs from 'fs';
 import cors from 'cors';
 import { config } from './config.js';
+import { randomUUID } from 'crypto';
 
 const app = express();
 app.use(cors());
@@ -26,101 +27,96 @@ const cleanup = (filename) => {
   }
 };
 
+const CONFIG = {
+  timeout: 5000,        // 5 seconds
+  maxBuffer: 50 * 1024  // 50KB
+};
+
+// Add new endpoint
+app.get('/config', (req, res) => {
+  res.json({
+    timeout: CONFIG.timeout,
+    maxBuffer: CONFIG.maxBuffer,
+    compilers: ['gcc', 'g++']
+  });
+});
+
 app.post('/compile', (req, res) => {
   const { code, compiler, stdin } = req.body;
-  if (!code || !compiler) {
-    return res.status(400).json({ success: false, error: 'Code and compiler are required' });
-  }
+  const requestId = randomUUID();  // Generate unique ID for this request
+  
+  const sourceFile = `${requestId}.${compiler === 'gcc' ? 'c' : 'cpp'}`;
+  const execFile = `${requestId}.out`;
 
-  if (!['gcc', 'g++'].includes(compiler)) {
-    return res.status(400).json({ success: false, error: 'Unsupported compiler type' });
-  }
-
-  const filename = compiler === 'gcc' ? 'program.c' : 'program.cpp';
-  fs.writeFileSync(filename, code);
-
-  // First compile the program
-  exec(`${compiler} -Wall ${filename} -o program`, (compileErr, _, compileStderr) => {
-    if (compileErr) {
-      cleanup(filename);
-      return res.json({
-        success: false,
-        compilationOutput: compileStderr,
-        error: 'Compilation failed'
-      });
-    }
-
-    const execOptions = {
-      timeout: 5000,
-      maxBuffer: MEMORY_LIMIT,
-      killSignal: 'SIGTERM'
-    };
-
-    let outputBuffer = '';
-    let errorBuffer = '';
-    const runProcess = exec(`./program`, execOptions);
+  try {
+    fs.writeFileSync(sourceFile, code);
     
-    // Collect stdout
-    runProcess.stdout.on('data', (data) => {
-      outputBuffer += data;
-      if (outputBuffer.length > MEMORY_LIMIT) {
-        runProcess.kill('SIGTERM');
-      }
-    });
-
-    // Collect stderr
-    runProcess.stderr.on('data', (data) => {
-      errorBuffer += data;
-    });
-
-    // Handle process completion
-    runProcess.on('exit', (code, signal) => {
-      cleanup(filename);
-      
-      // Case 1: Memory Limit Exceeded
-      if (outputBuffer.length > MEMORY_LIMIT) {
+    exec(`${compiler} -Wall ${sourceFile} -o ${execFile}`, (compileErr, _, compileStderr) => {
+      if (compileErr) {
+        fs.unlinkSync(sourceFile);
         return res.json({
           success: false,
-          compilationOutput: '⚠️ Program terminated - Memory limit exceeded',
-          programOutput: `${outputBuffer.slice(0, 200)}...\n\n⛔ Program stopped: Output exceeded the 50KB limit`,
-          error: 'Your program generated too much output (>50KB). Try reducing the amount of output.'
+          compilationOutput: compileStderr,
+          error: 'Compilation failed'
         });
       }
 
-      // Case 2: Time Limit Exceeded
-      if (signal === 'SIGTERM') {
-        return res.json({
-          success: false,
-          compilationOutput: '⚠️ Program terminated - Time limit exceeded',
-          programOutput: `${outputBuffer}\n\n⛔ Program stopped: Exceeded the 5-second time limit`,
-          error: 'Your program took too long to execute (>5 seconds). Check for infinite loops or optimize your code.'
+      const execOptions = {
+        timeout: CONFIG.timeout,
+        maxBuffer: CONFIG.maxBuffer,
+        killSignal: 'SIGTERM'
+      };
+
+      const runProcess = exec(`./${execFile}`, execOptions, (runErr, runStdout, runStderr) => {
+        // Cleanup our specific files
+        fs.unlinkSync(sourceFile);
+        fs.unlinkSync(execFile);
+
+        if (runErr && runErr.signal === 'SIGTERM') {
+          return res.json({
+            success: false,
+            compilationOutput: compileStderr || 'Compilation successful',
+            programOutput: runStdout ? runStdout.slice(0, 200) + '...' : '',
+            error: 'Program execution timed out or exceeded memory limit'  // Updated error message
+          });
+        }
+
+        if (runErr) {
+          return res.json({
+            success: false,
+            compilationOutput: compileStderr || 'Compilation successful',
+            programOutput: runStdout || '',
+            error: `Runtime error: ${runStderr}`
+          });
+        }
+
+        res.json({
+          success: true,
+          compilationOutput: compileStderr || 'Compilation successful',
+          programOutput: runStdout || ''
         });
+      });
+
+      if (stdin) {
+        runProcess.stdin.write(stdin);
+        runProcess.stdin.end();
       }
 
-      // Case 3: Runtime Error
-      if (code !== 0) {
-        return res.json({
-          success: false,
-          compilationOutput: '⚠️ Program terminated - Runtime error occurred',
-          programOutput: outputBuffer,
-          error: errorBuffer || 'Program crashed or exited with an error. Check for segmentation faults, array out of bounds, etc.'
-        });
-      }
-
-      // Case 4: Successful Execution
-      res.json({
-        success: true,
-        compilationOutput: '✅ Program compiled and executed successfully',
-        programOutput: outputBuffer || '(Program executed successfully but produced no output)'
+      // Add output size check
+      let outputSize = 0;
+      runProcess.stdout.on('data', (data) => {
+        outputSize += data.length;
+        if (outputSize > execOptions.maxBuffer) {
+          runProcess.kill(execOptions.killSignal);
+        }
       });
     });
-
-    // Handle stdin if provided
-    if (stdin) {
-      runProcess.stdin.write(stdin);
-      runProcess.stdin.end();
-    }
-  });
+  } catch (error) {
+    // Cleanup if error occurs
+    if (fs.existsSync(sourceFile)) fs.unlinkSync(sourceFile);
+    if (fs.existsSync(execFile)) fs.unlinkSync(execFile);
+    // ... error handling ...
+  }
 });
 
 app.listen(config.PORT, () => {

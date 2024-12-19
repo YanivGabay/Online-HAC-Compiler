@@ -9,9 +9,14 @@ import { Footer } from "./components/Footer";
 import { compileAndRun, CompilerType, CompilationStatus } from "./services/compilerService";
 
 export default function App() {
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState(`#include <iostream>
+
+int main() {
+    std::cout << "Hello, World!" << std::endl;
+    return 0;
+}`);
   const [stdin, setStdin] = useState('');
-  const [compiler, setCompiler] = useState<CompilerType>('gcc');
+  const [compiler, setCompiler] = useState<CompilerType>('g++');
   const [isCompiling, setIsCompiling] = useState(false);
   const [result, setResult] = useState<CompilationStatus | null>(null);
 
@@ -80,12 +85,15 @@ export default function App() {
             <Group grow align="flex-start">
               <OutputPanel
                 title="Compilation Output"
-                content={result?.result?.compilationOutput}
+                content={
+                  result?.status === 'completed' || result?.status === 'failed' 
+                    ? (result?.result?.error || result?.result?.compilationOutput)
+                    : undefined
+                }
                 placeholder="No compilation messages"
                 isError={true}
                 loading={isCompiling}
                 status={result?.status}
-                output={result?.result}
               />
               <OutputPanel
                 title="Program Output"
@@ -93,7 +101,6 @@ export default function App() {
                 placeholder="Program hasn't been run yet"
                 loading={isCompiling}
                 status={result?.status}
-                output={result?.result}
               />
             </Group>
           </Stack>

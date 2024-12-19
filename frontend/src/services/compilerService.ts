@@ -1,12 +1,7 @@
 import { config } from '../config';
+import { CONFIG } from './initService';
 
 export type CompilerType = 'gcc' | 'g++';
-
-interface CompilationRequest {
-  code: string;
-  compiler: CompilerType;
-  stdin: string;
-}
 
 interface CompilationResponse {
   success: boolean;
@@ -54,11 +49,24 @@ export async function compileAndRun(code: string, compiler: CompilerType, stdin:
 }
 
 async function getCompilationStatus(requestId: string): Promise<CompilationStatus> {
+  // First check
+  await new Promise(resolve => setTimeout(resolve, 500));
+  let status = await checkStatus(requestId);
+  
+  // If still compiling, wait up to timeout
+  const startTime = Date.now();
+  while (status.status === 'compiling' && Date.now() - startTime < CONFIG.timeout) {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    status = await checkStatus(requestId);
+  }
+  
+  return status;
+}
+
+async function checkStatus(requestId: string) {
   const response = await fetch(`${config.BACKEND_URL}/status/${requestId}`);
   if (!response.ok) {
     throw new Error('Failed to get compilation status');
   }
-
-  const status: CompilationStatus = await response.json();
-  return status;
+  return await response.json();
 } 
