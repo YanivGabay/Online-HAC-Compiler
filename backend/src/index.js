@@ -3,12 +3,11 @@ import cors from 'cors';
 import pkg from 'body-parser';
 const { json } = pkg;
 import fetch from 'node-fetch';
+import { config } from './config.js';
 
 const app = express();
 app.use(cors());
 app.use(json());
-
-const COMPILER_URL = process.env.COMPILER_URL || 'http://compiler:3002';
 
 app.post('/compile', async (req, res) => {
   const { code, compiler, stdin } = req.body;
@@ -22,7 +21,8 @@ app.post('/compile', async (req, res) => {
   }
 
   try {
-    const response = await fetch(`${COMPILER_URL}/compile`, {
+    console.log('Attempting to reach compiler at:', config.COMPILER_URL);
+    const response = await fetch(`${config.COMPILER_URL}/compile`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code, compiler, stdin }),
@@ -30,6 +30,7 @@ app.post('/compile', async (req, res) => {
 
     if (!response.ok) {
       const text = await response.text();
+      console.error('Compiler service error:', text);
       return res.status(response.status).json({ success: false, error: text });
     }
 
@@ -37,6 +38,7 @@ app.post('/compile', async (req, res) => {
     return res.json(result);
 
   } catch (error) {
+    console.error('Backend error:', error);
     return res.status(500).json({
       success: false,
       error: error.message || 'Unknown backend error'
@@ -44,7 +46,6 @@ app.post('/compile', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`Backend running on port ${PORT}`);
+app.listen(config.PORT, () => {
+  console.log(`Backend running on port ${config.PORT}`);
 });

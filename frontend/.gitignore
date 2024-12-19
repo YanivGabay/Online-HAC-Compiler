@@ -133,3 +133,6 @@ dist
 
 # Docker environment variable files
 .env.docker
+
+# Add to existing .gitignore
+src/config.ts

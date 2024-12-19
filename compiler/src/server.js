@@ -2,8 +2,11 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import { exec } from 'child_process';
 import fs from 'fs';
+import cors from 'cors';
+import { config } from './config.js';
 
 const app = express();
+app.use(cors());
 app.use(bodyParser.json());
 
 app.post('/compile', (req, res) => {
@@ -59,7 +62,6 @@ app.post('/compile', (req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 3002;
-app.listen(PORT, () => {
-  console.log(`Compiler service running on port ${PORT}`);
+app.listen(config.PORT, () => {
+  console.log(`Compiler service running on port ${config.PORT}`);
 });
