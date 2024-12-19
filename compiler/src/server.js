@@ -9,6 +9,23 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
+const MEMORY_LIMIT = 1024 * 1024; // 1MB output limit
+
+const cleanup = (filename) => {
+  try {
+    // Remove the source file
+    if (fs.existsSync(filename)) {
+      fs.unlinkSync(filename);
+    }
+    // Remove the compiled program
+    if (fs.existsSync('program')) {
+      fs.unlinkSync('program');
+    }
+  } catch (err) {
+    console.error('Cleanup error:', err);
+  }
+};
+
 app.post('/compile', (req, res) => {
   const { code, compiler, stdin } = req.body;
   if (!code || !compiler) {
@@ -24,6 +41,7 @@ app.post('/compile', (req, res) => {
 
   exec(`${compiler} -Wall ${filename} -o program`, (compileErr, _, compileStderr) => {
     if (compileErr) {
+      cleanup(filename);
       return res.json({
         success: false,
         compilationOutput: compileStderr,
@@ -31,7 +49,26 @@ app.post('/compile', (req, res) => {
       });
     }
 
-    const runProcess = exec(`./program`, { timeout: 5000 }, (runErr, runStdout, runStderr) => {
+    const execOptions = {
+      timeout: 5000,
+      maxBuffer: MEMORY_LIMIT
+    };
+
+    const runProcess = exec(`./program`, execOptions, (runErr, runStdout, runStderr) => {
+      // Always cleanup after execution
+      cleanup(filename);
+
+      // Check for memory limit exceeded
+      if (runErr && runErr.code === 'ENOBUFS') {
+        return res.json({
+          success: false,
+          compilationOutput: compileStderr || 'Compilation successful',
+          programOutput: 'Program output exceeded 1MB limit',
+          error: 'Memory Limit Exceeded (MLE) - Output was too large'
+        });
+      }
+
+      // Check for timeout
       if (runErr && runErr.signal === 'SIGTERM') {
         return res.json({
           success: false,
@@ -41,6 +78,7 @@ app.post('/compile', (req, res) => {
         });
       }
 
+      // Check for other runtime errors
       if (runErr) {
         return res.json({
           success: false,
@@ -50,6 +88,7 @@ app.post('/compile', (req, res) => {
         });
       }
 
+      // Successful execution
       res.json({
         success: true,
         compilationOutput: compileStderr || 'Compilation successful',
