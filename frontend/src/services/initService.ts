@@ -6,11 +6,16 @@ export interface CompilerConfig {
   compilers: string[];
 }
 
+
+
 export let CONFIG: CompilerConfig = {
   timeout: 5000,  // default
   maxBuffer: 50 * 1024,  // default
   compilers: ['gcc', 'g++']
 };
+
+export const STATUS_REQUESTS = 2;
+
 
 export async function initializeApp() {
   try {

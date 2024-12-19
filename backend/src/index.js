@@ -14,6 +14,19 @@ app.use(json());
 
 app.use('/compile', limiter);
 
+app.get('/config', async (req, res) => {
+  try {
+    const response = await fetch(`${config.COMPILER_URL}/config`);
+    if (!response.ok) {
+      throw new Error('Failed to get compiler config');
+    }
+    const compilerConfig = await response.json();
+    res.json(compilerConfig);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get compiler configuration' });
+  }
+});
+
 app.post('/compile', async (req, res) => {
   const { code, compiler, stdin } = req.body;
 

@@ -1,7 +1,9 @@
 import { config } from '../config';
-import { CONFIG } from './initService';
+import { CONFIG, STATUS_REQUESTS } from './initService';
 
 export type CompilerType = 'gcc' | 'g++';
+
+
 
 interface CompilationResponse {
   success: boolean;
@@ -56,7 +58,7 @@ async function getCompilationStatus(requestId: string): Promise<CompilationStatu
   // If still compiling, wait up to timeout
   const startTime = Date.now();
   while (status.status === 'compiling' && Date.now() - startTime < CONFIG.timeout) {
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, CONFIG.timeout / STATUS_REQUESTS));
     status = await checkStatus(requestId);
   }
   
