@@ -87,11 +87,11 @@ int main() {
                 title="Compilation Output"
                 content={
                   result?.status === 'completed' || result?.status === 'failed' 
-                    ? (result?.result?.error || result?.result?.compilationOutput)
+                    ? (result?.result?.compilationOutput || result?.result?.error)
                     : undefined
                 }
                 placeholder="No compilation messages"
-                isError={true}
+                isError={!result?.result?.success}
                 loading={isCompiling}
                 status={result?.status}
               />
