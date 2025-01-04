@@ -12,8 +12,6 @@ The Online HAC Compiler is a web-based platform designed to provide Hadassah Aca
 
 ## Getting Started
 
-To set up and run the project, follow these steps:
-
 1. **Clone the Repository**:
    ```bash
    git clone https://github.com/YanivGabay/Online-HAC-Compiler.git
@@ -22,28 +20,36 @@ To set up and run the project, follow these steps:
 
 2. **Development Setup**:
    ```bash
-   docker-compose -f docker-compose.dev.yml up --build
+   # Start all services in development mode
+   docker compose up
    ```
    Access the application at `http://localhost:3000`
+   
+   Development features:
+   - Hot reloading enabled
+   - Source maps for debugging
+   - Real-time code updates
 
 3. **Production Deployment**:
    ```bash
-   docker-compose -f docker-compose.prod.yml up -d --build
+   docker compose -f docker-compose.prod.yml up -d
    ```
    Access the application at `http://your-domain` or `http://your-ip`
 
 ## Environment Configuration
 
-- **Development**:
-  - Frontend runs on port 3000
+- **Development** (`docker-compose.yml`):
+  - Frontend runs on port 3000 (Vite dev server on 5173)
   - Backend runs on port 3001
   - Compiler service runs on port 3002
+  - Includes hot reloading and development features
 
-- **Production**:
+- **Production** (`docker-compose.prod.yml`):
   - Frontend runs on port 80 (HTTP)
   - Backend runs on port 3001
   - Compiler service runs on port 3002
   - Includes automatic container restart
+  - Optimized builds and nginx serving
 
 ## Project Structure
 

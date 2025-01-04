@@ -1,6 +1,8 @@
 services:
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      target: development
     ports:
       - "3000:5173"
     volumes:

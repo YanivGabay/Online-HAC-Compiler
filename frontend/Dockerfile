@@ -16,11 +16,15 @@ COPY . .
 # Install dependencies
 RUN yarn install --frozen-lockfile
 
-# Set up environment
+# Set up environment based on NODE_ENV
 ARG NODE_ENV
-COPY .env.${NODE_ENV} .env
+RUN if [ "$NODE_ENV" = "production" ]; then \
+        cp .env.production .env; \
+    else \
+        cp .env.development .env; \
+    fi
 
-# Always build for production stage
+# Build for production stage
 RUN yarn build
 
 # Development stage
