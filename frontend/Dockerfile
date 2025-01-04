@@ -9,27 +9,28 @@ COPY package.json yarn.lock ./
 
 # Install corepack for yarn
 RUN corepack enable
+
+# Copy all files
 COPY . .
 
 # Install dependencies
 RUN yarn install --frozen-lockfile
 
-
+# Set up environment
 ARG NODE_ENV
-# Important: Copy the correct .env file before building
 COPY .env.${NODE_ENV} .env
 
-# Build the app
+# Always build for production stage
 RUN yarn build
 
-# Serve stage
-FROM nginx:alpine
+# Development stage
+FROM build as development
+EXPOSE 5173
+ENV HOST=0.0.0.0
+CMD ["yarn", "dev", "--host"]
 
-# Copy built assets from build stage
+# Production stage
+FROM nginx:alpine as production
 COPY --from=build /app/dist /usr/share/nginx/html
-
-# Expose port 80
 EXPOSE 80
-
-# Start nginx
 CMD ["nginx", "-g", "daemon off;"] 

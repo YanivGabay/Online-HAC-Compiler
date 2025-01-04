@@ -17,7 +17,7 @@ export function Footer() {
             variant="light"
             size="sm"
           >
-            GitHub
+            Github
           </Button>
           <Button
             component="a"
