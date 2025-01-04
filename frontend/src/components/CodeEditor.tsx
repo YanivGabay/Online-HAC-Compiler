@@ -1,32 +1,25 @@
-import Editor, { OnMount } from "@monaco-editor/react";
-import { useRef } from "react";
+import { Editor } from "@monaco-editor/react";
+import { CompilerType } from '../services/compilerService';
 
 interface CodeEditorProps {
   code: string;
+  compiler: CompilerType;
   onChange: (value: string | undefined) => void;
 }
 
-export function CodeEditor({ code, onChange }: CodeEditorProps) {
-  const editorRef = useRef(null);
-
-  const handleEditorDidMount: OnMount = (editor) => {
-    editorRef.current = editor;
-  };
+export function CodeEditor({ code, compiler, onChange }: CodeEditorProps) {
+  const language = compiler === 'gcc' ? 'c' : 'cpp';
 
   return (
     <Editor
       height="100%"
-      defaultLanguage="cpp"
+      defaultLanguage={language}
+      language={language}
       value={code}
       onChange={onChange}
-      onMount={handleEditorDidMount}
-      theme="vs-dark"
       options={{
         minimap: { enabled: false },
         fontSize: 14,
-        scrollBeyondLastLine: false,
-        automaticLayout: true,
-        tabSize: 4,
       }}
     />
   );

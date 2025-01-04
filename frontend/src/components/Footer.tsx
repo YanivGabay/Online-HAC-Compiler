@@ -11,7 +11,7 @@ export function Footer() {
         <Group gap="xs" justify="flex-end" align="center">
           <Button
             component="a"
-            href="https://github.com/your-actual-username/your-actual-repo"
+            href="https://github.com/YanivGabay/Online-HAC-Compiler"
             target="_blank"
             leftSection={<IconBrandGithub size={16} />}
             variant="light"
