@@ -66,6 +66,7 @@ int main() {
               <Suspense fallback={<LoadingOverlay visible />}>
                 <CodeEditor 
                   code={code}
+                  compiler={compiler}
                   onChange={(value) => setCode(value || "")}
                 />
               </Suspense>
