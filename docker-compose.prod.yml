@@ -1,0 +1,29 @@
+services:
+  frontend:
+    build: 
+      context: ./frontend
+      args:
+        - NODE_ENV=production
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+  backend:
+    build: ./backend
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    depends_on:
+      - compiler
+
+  compiler:
+    build: ./compiler
+    ports:
+      - "3002:3002"
+    restart: unless-stopped 

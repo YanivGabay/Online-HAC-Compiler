@@ -8,13 +8,16 @@ WORKDIR /app
 COPY package.json yarn.lock ./
 
 # Install corepack for yarn
-RUN corepack enable
-
-# Copy all files
+RUN corepack enable# Copy all files
 COPY . .
 
 # Install dependencies
 RUN yarn install --frozen-lockfile
+
+
+
+# Important: Copy the correct .env file before building
+COPY .env.${NODE_ENV} .env
 
 # Build the app
 RUN yarn build

@@ -1,4 +1,3 @@
-
 # Online HAC Compiler
 
 The Online HAC Compiler is a web-based platform designed to provide Hadassah Academic College students with a local code compilation environment, eliminating the need to rely on the college's server infrastructure.
@@ -13,45 +12,54 @@ The Online HAC Compiler is a web-based platform designed to provide Hadassah Aca
 
 ## Getting Started
 
-To set up and run the project locally, follow these steps:
+To set up and run the project, follow these steps:
 
 1. **Clone the Repository**:
-
    ```bash
    git clone https://github.com/YanivGabay/Online-HAC-Compiler.git
    cd Online-HAC-Compiler
    ```
 
-2. **Run the Application**:
-
-   Ensure you have [Docker](https://www.docker.com/) installed. Then, start the application using:
-
+2. **Development Setup**:
    ```bash
-   docker-compose up --build
+   docker-compose -f docker-compose.dev.yml up --build
    ```
+   Access the application at `http://localhost:3000`
 
-   This will build and start the following containers:
-   - **Frontend**: A React + TypeScript application served by Nginx.
-   - **Backend**: A Node.js API for handling compilation requests.
-   - **Compiler**: A Node.js server running in a Docker container, replicating CentOS 8 with GCC 8.5.
+3. **Production Deployment**:
+   ```bash
+   docker-compose -f docker-compose.prod.yml up -d --build
+   ```
+   Access the application at `http://your-domain` or `http://your-ip`
 
-3. **Access the Application**:
+## Environment Configuration
 
-   Open your browser and navigate to `http://localhost:3000` to use the Online HAC Compiler.
+- **Development**:
+  - Frontend runs on port 3000
+  - Backend runs on port 3001
+  - Compiler service runs on port 3002
+
+- **Production**:
+  - Frontend runs on port 80 (HTTP)
+  - Backend runs on port 3001
+  - Compiler service runs on port 3002
+  - Includes automatic container restart
 
 ## Project Structure
 
-- **compiler/**: Contains a Node.js server and Docker configuration for the GCC-based code execution environment.
-- **backend/**: Implements the Node.js API that handles compilation requests and communicates with the compiler service.
-- **frontend/**: Includes the React + TypeScript project files and Monaco Editor configuration for the user interface.
-- **docker-compose.yml**: Configures the multi-container application setup, tying together the frontend, backend, and compiler environments.
+- **compiler/**: Contains the GCC-based code execution environment
+- **backend/**: Implements the Node.js API for compilation requests
+- **frontend/**: React + TypeScript project with Monaco Editor
+- **docker-compose.dev.yml**: Development environment configuration
+- **docker-compose.prod.yml**: Production environment configuration
 
 ## Future Improvements/Plans
 
-- **User Authentication**: Implement user accounts to save and manage code snippets.
-- **Loading Files**: Allow users to load and save code files from their local machine.
-- **AI Assistance**: Integrate AI-based code completion and error detection features.
-- **Premium Features/Donations**: Offer premium features or donation options to support the project.
-- **Hosting**: Deploy the application to a cloud platform for public access, a VPS like ocean digital or AWS.
+- **User Authentication**: Implement user accounts to save and manage code snippets
+- **Loading Files**: Allow users to load and save code files from their local machine
+- **AI Assistance**: Integrate AI-based code completion and error detection features
+- **Premium Features/Donations**: Offer premium features or donation options to support the project
+- **Hosting**: Deploy the application to a cloud platform for public access, a VPS like ocean digital or AWS
+
 ---
 
