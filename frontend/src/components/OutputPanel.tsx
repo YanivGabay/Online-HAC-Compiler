@@ -19,16 +19,21 @@ export function OutputPanel({ title, content, placeholder, loading, isError, sta
   };
 
   const getTextColor = () => {
-    if (status === 'failed') return "red";
-    if (content && isError && content.includes("error")) return "red";
-    return "dimmed";
+    if (status === 'failed') return "red.7";
+    if (content && isError && content.includes("error")) return "red.7";
+    if (status === 'completed' && !isError) return "success.7";
+    return "brand.7";
   };
 
   return (
     <Paper shadow="xs" p="md" style={{ position: 'relative' }}>
-      <LoadingOverlay visible={loading || false} />
-      <Title order={4} mb="sm">{title}</Title>
-      <Paper bg="gray.1" p="md" style={{ minHeight: "150px" }}>
+      <LoadingOverlay 
+        visible={loading || false}
+        loaderProps={{ color: 'brand' }}
+        overlayProps={{ blur: 2 }}
+      />
+      <Title order={4} mb="sm" c="brand.7">{title}</Title>
+      <Paper bg="dark.7" p="md" style={{ minHeight: "150px" }}>
         <Text c={getTextColor()} style={{ whiteSpace: "pre-wrap" }}>
           {getDisplayText()}
         </Text>

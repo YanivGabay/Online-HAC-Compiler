@@ -1,21 +1,37 @@
-import { Group, Text, Button } from "@mantine/core";
+import { Group, Text, Button, Container, useMantineTheme } from "@mantine/core";
 import { IconBrandGithub, IconHeart } from '@tabler/icons-react';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const theme = useMantineTheme();
 
   return (
-    <div style={{ height: '100%', padding: 'md' }}>
-      <Group justify="space-between" h="100%">
-        <Text size="sm">© {currentYear} C/C++ Online Compiler</Text>
-        <Group gap="xs" justify="flex-end" align="center">
+    <Container 
+      h="100%" 
+      py={{ base: 'xs', sm: 'md' }}
+      px="md"
+    >
+      <Group 
+        justify="space-between" 
+        h="100%"
+        wrap="wrap-reverse"
+        gap="sm"
+      >
+        <Text 
+          size="sm" 
+          c="brand.7"
+        >
+          © {currentYear} C/C++ Online Compiler
+        </Text>
+
+        <Group gap="xs" wrap="nowrap">
           <Button
             component="a"
             href="https://github.com/YanivGabay/Online-HAC-Compiler"
             target="_blank"
             leftSection={<IconBrandGithub size={16} />}
             variant="light"
-            size="sm"
+            color="brand"
           >
             Github
           </Button>
@@ -23,15 +39,14 @@ export function Footer() {
             component="a"
             href="https://github.com/sponsors/your-actual-username"
             target="_blank"
-            leftSection={<IconHeart size={16} style={{ color: '#FF0000' }} />}
+            leftSection={<IconHeart size={16} style={{ color: theme.colors.red[6] }} />}
             variant="light"
-            color="pink"
-            size="sm"
+            color="red"
           >
             Support Us
           </Button>
         </Group>
       </Group>
-    </div>
+    </Container>
   );
 } 
