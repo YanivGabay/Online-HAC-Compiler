@@ -1,3 +1,12 @@
+# Environment files
 .env
 .env.docker
 .env*
+
+# SSH Keys (never commit these)
+*.pem
+id_rsa*
+id_ed25519*
+*_deploy*
+.ssh/
+

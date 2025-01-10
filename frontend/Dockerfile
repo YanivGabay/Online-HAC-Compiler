@@ -16,17 +16,25 @@ COPY . .
 # Install dependencies
 RUN yarn install --frozen-lockfile
 
-# Build the app
+# Set up environment based on NODE_ENV
+ARG NODE_ENV
+RUN if [ "$NODE_ENV" = "production" ]; then \
+        cp .env.production .env; \
+    else \
+        cp .env.development .env; \
+    fi
+
+# Build for production stage
 RUN yarn build
 
-# Serve stage
-FROM nginx:alpine
+# Development stage
+FROM build as development
+EXPOSE 5173
+ENV HOST=0.0.0.0
+CMD ["yarn", "dev", "--host"]
 
-# Copy built assets from build stage
+# Production stage
+FROM nginx:alpine as production
 COPY --from=build /app/dist /usr/share/nginx/html
-
-# Expose port 80
 EXPOSE 80
-
-# Start nginx
 CMD ["nginx", "-g", "daemon off;"] 
