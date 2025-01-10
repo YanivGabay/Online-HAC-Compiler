@@ -23,8 +23,17 @@ jobs:
           host: ${{ secrets.DROPLET_IP }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /home/deploy/online-gcc-compiler
-            git pull origin master
-            docker compose -f docker-compose.prod.yml up -d --build
-            docker system prune -af 
+           script: |
+              set -e
+              if [ ! -d "/home/deploy/online-gcc-compiler" ]; then
+                echo "Directory /home/deploy/online-gcc-compiler does not exist. Cloning repository."
+                git clone https://github.com/YanivGabay/Online-HAC-Compiler.git /home/deploy/online-gcc-compiler
+              fi
+              cd /home/deploy/online-gcc-compiler
+              git pull origin master
+              if [ ! -f "docker-compose.prod.yml" ]; then
+                echo "File docker-compose.prod.yml is missing."
+                exit 1
+              fi
+              docker compose -f docker-compose.prod.yml up -d --build
+              docker system prune -af
