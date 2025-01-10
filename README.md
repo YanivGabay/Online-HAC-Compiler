@@ -1,71 +1,91 @@
 # Online HAC Compiler
 
-The Online HAC Compiler is a web-based platform designed to provide Hadassah Academic College students with a local code compilation environment, eliminating the need to rely on the college's server infrastructure.
+A web-based C/C++ compiler designed for Hadassah Academic College students. This project provides a local\online compilation environment, eliminating dependency on the college's server infrastructure.
 
-## Features
+## Project Overview
 
-- **In-Browser Code Editing**: Utilizes the Monaco Editor for a rich code editing experience.
-- **Frontend**: Built with React and TypeScript Mantine (UI library).
-- **Backend**: Implemented using Node.js to handle compilation requests.
-- **Compiler Service**: Includes a Node.js server that manages code execution in a CentOS 8 environment with GCC 8.5.
-- **Docker Integration**: Employs Docker to containerize the frontend, backend, and compiler services.
+This is version 0.1.0 of the Online HAC Compiler. The initial version focuses on establishing the core functionality and basic UI components.
 
-## Getting Started
+### Tech Stack
 
-1. **Clone the Repository**:
+- **Frontend**: 
+  - React with TypeScript
+  - [Mantine v7](https://mantine.dev/) for UI components
+  - Monaco Editor for code editing
+  - Vite for development and building
+
+- **Backend**: 
+  - Node.js with Express
+  - Rate limiting and error handling
+  - Request queue management
+
+- **Compiler Service**: 
+  - CentOS 8 with GCC 8.5.0.22 Red Hat, exatcly as the college's server
+ - Input/Output handling
+
+### Features
+
+- **Modern UI**: Clean, responsive interface using Mantine components
+- **Theme Support**: Light/Dark mode switching
+- **Code Editor**: Full-featured Monaco editor with syntax highlighting
+- **Compilation**: Real-time compilation status and output
+- **Docker Integration**: Containerized services for easy deployment
+
+## Development
+
+1. **Clone and Setup**:
    ```bash
    git clone https://github.com/YanivGabay/Online-HAC-Compiler.git
    cd Online-HAC-Compiler
    ```
 
-2. **Development Setup**:
+2. **Development Mode**:
    ```bash
-   # Start all services in development mode
    docker compose up
    ```
-   Access the application at `http://localhost:3000`
+   Access at `http://localhost:3000`
    
-   Development features:
-   - Hot reloading enabled
-   - Source maps for debugging
-   - Real-time code updates
+   Features:
+   - Hot reloading
 
-3. **Production Deployment**:
+3. **Production Build**:
    ```bash
    docker compose -f docker-compose.prod.yml up -d
    ```
-   Access the application at `http://your-domain` or `http://your-ip`
+   You can create your own docker-compose.prod.yml file to fit your needs.
+   Optionally, you can use the docker-compose.prod.yml as a github action to deploy to a VPS.
+   I personally use a VPS from [ocean digital](https://ocean.digital/) and deploy the docker-compose.prod.yml 
+   through github actions (ssh) to the VPS.
 
-## Environment Configuration
 
-- **Development** (`docker-compose.yml`):
-  - Frontend runs on port 3000 (Vite dev server on 5173)
-  - Backend runs on port 3001
-  - Compiler service runs on port 3002
-  - Includes hot reloading and development features
 
-- **Production** (`docker-compose.prod.yml`):
-  - Frontend runs on port 80 (HTTP)
-  - Backend runs on port 3001
-  - Compiler service runs on port 3002
-  - Includes automatic container restart
-  - Optimized builds and nginx serving
+## Environment Setup
 
-## Project Structure
+- **Development**:
+  - Frontend: Port 3000 (Vite server on 5173)
+  - Backend API: Port 3001
+  - Compiler Service: Port 3002
 
-- **compiler/**: Contains the GCC-based code execution environment
-- **backend/**: Implements the Node.js API for compilation requests
-- **frontend/**: React + TypeScript project with Monaco Editor
-- **docker-compose.dev.yml**: Development environment configuration
-- **docker-compose.prod.yml**: Production environment configuration
+- **Production**:
+  - Frontend: Port 80
+  - Backend API: Port 3001
+  - Compiler Service: Port 3002
+  - Automatic container restart
 
-## Future Improvements/Plans
+## Future Plans
 
-- **User Authentication**: Implement user accounts to save and manage code snippets
-- **Loading Files**: Allow users to load and save code files from their local machine
-- **AI Assistance**: Integrate AI-based code completion and error detection features
-- **Premium Features/Donations**: Offer premium features or donation options to support the project
-- **Hosting**: Deploy the application to a cloud platform for public access, a VPS like ocean digital or AWS
+- Supabase & Drizzle ORM
+- User authentication
+- Code snippet saving
+- File upload/download
+- AI-powered code assistance
+- Premium features
+
+## Contributing
+
+This is a personal project for HAC students. Feel free to open issues or submit PRs if you'd like to contribute.
 
 ---
+
+Built with ❤️ by Yaniv Gabay
 
