@@ -22,8 +22,26 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -e
-            cd /home/deploy/online-gcc-compiler || exit 1
+            # Ensure the project directory exists
+            if [ ! -d "/home/deploy/online-gcc-compiler" ]; then
+              echo "Directory /home/deploy/online-gcc-compiler does not exist."
+              exit 1
+            fi
+
+            # Navigate to the project directory
+            cd /home/deploy/online-gcc-compiler
+
+            # Ensure .env.production exists
+            if [ ! -f ".env.production" ]; then
+              echo ".env.production file is missing."
+              exit 1
+            fi
+
+            # Pull latest changes
             git pull origin master
-            ls -la frontend/.env*  # Debug: check files
+
+            # Deploy the application
             docker compose -f docker-compose.prod.yml up -d --build
+
+            # Clean up unused Docker resources
             docker system prune -af
