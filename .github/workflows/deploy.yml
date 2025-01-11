@@ -14,9 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged == true || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Deploy to Droplet
         uses: appleboy/ssh-action@master
         with:
@@ -25,14 +22,10 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -e
-            if [ ! -d "/home/deploy/online-gcc-compiler" ]; then
-              echo "Directory /home/deploy/online-gcc-compiler does not exist. Cloning repository."
-              git clone https://github.com/YanivGabay/Online-HAC-Compiler.git /home/deploy/online-gcc-compiler
-            fi
-            cd /home/deploy/online-gcc-compiler
+            cd /home/deploy/online-gcc-compiler || exit 1
             git pull origin master
             if [ ! -f "docker-compose.prod.yml" ]; then
-              echo "File docker-compose.prod.yml is missing."
+              echo "docker-compose.prod.yml not found"
               exit 1
             fi
             docker compose -f docker-compose.prod.yml up -d --build
