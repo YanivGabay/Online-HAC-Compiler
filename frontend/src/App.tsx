@@ -1,5 +1,5 @@
 import "@mantine/core/styles.css";
-import { MantineProvider, AppShell, Paper, Group, Stack, LoadingOverlay, Textarea, ColorSchemeScript } from "@mantine/core";
+import { MantineProvider, AppShell, Paper, Group, Stack, LoadingOverlay, Textarea, ColorSchemeScript, Container, SimpleGrid } from "@mantine/core";
 import { theme } from "./theme";
 import { useState, Suspense } from "react";
 import { Header } from "./components/Header";
@@ -51,73 +51,80 @@ export default function App() {
   return (
     <>
       <ColorSchemeScript />
-      <MantineProvider 
-        theme={theme}
-        defaultColorScheme="light"
-      >
+      <MantineProvider theme={theme} defaultColorScheme="light">
         <AppShell
-          header={{ height: { base: 120, sm: 140 } }}
-          footer={{ height: 60 }}
+          header={{ height: { base: 100, sm: 80 } }}
+          footer={{ height: 50 }}
           padding="md"
           style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}
         >
           <AppShell.Header>
-            <Header
-              compiler={compiler}
-              onCompilerChange={handleCompilerChange}
-              onCompile={handleCompile}
-              isCompiling={isCompiling}
-            />
+            <Container size="xl" h="100%" py={{ base: 'xs', sm: 'md' }}>
+              <Header
+                compiler={compiler}
+                onCompilerChange={handleCompilerChange}
+                onCompile={handleCompile}
+                isCompiling={isCompiling}
+              />
+            </Container>
           </AppShell.Header>
 
-          <AppShell.Main style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingBottom: '60px' }}>
-            <Stack gap="md" style={{ flex: 1 }}>
-              <Paper shadow="xs" p="md" style={{ height: "400px", position: "relative" }}>
-                <Suspense fallback={<LoadingOverlay visible />}>
-                  <CodeEditor 
-                    code={code}
-                    compiler={compiler}
-                    onChange={(value) => setCode(value || "")}
-                  />
-                </Suspense>
-              </Paper>
+          <AppShell.Main>
+            <Container size="xl" py="md">
+              <Stack gap="md">
+                <Paper shadow="sm" radius="md" withBorder p="md" style={{ height: "60vh", position: "relative" }}>
+                  <Suspense fallback={<LoadingOverlay visible />}>
+                    <CodeEditor 
+                      code={code}
+                      compiler={compiler}
+                      onChange={(value) => setCode(value || "")}
+                    />
+                  </Suspense>
+                </Paper>
 
-              <Paper shadow="xs" p="md">
-                <Textarea
-                  label="Standard Input (stdin)"
-                  placeholder="Enter program input here..."
-                  value={stdin}
-                  onChange={(event) => setStdin(event.currentTarget.value)}
-                  minRows={2}
-                  maxRows={4}
-                />
-              </Paper>
+                <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
+                  <Paper shadow="sm" radius="md" withBorder p="md">
+                    <Textarea
+                      label="Standard Input (stdin)"
+                      placeholder="Enter program input here..."
+                      value={stdin}
+                      onChange={(event) => setStdin(event.currentTarget.value)}
+                      minRows={3}
+                      maxRows={5}
+                      styles={{
+                        label: { marginBottom: 8 },
+                        input: { fontFamily: 'monospace' }
+                      }}
+                    />
+                  </Paper>
 
-              <Group grow align="flex-start">
-                <OutputPanel
-                  title="Compilation Output"
-                  content={
-                    result?.status === 'completed' || result?.status === 'failed' 
-                      ? (result?.result?.compilationOutput || result?.result?.error)
-                      : undefined
-                  }
-                  placeholder="No compilation messages"
-                  isError={!result?.result?.success}
-                  loading={isCompiling}
-                  status={result?.status}
-                />
-                <OutputPanel
-                  title="Program Output"
-                  content={result?.result?.programOutput}
-                  placeholder="Program hasn't been run yet"
-                  loading={isCompiling}
-                  status={result?.status}
-                />
-              </Group>
-            </Stack>
+                  <Stack gap="md">
+                    <OutputPanel
+                      title="Compilation Output"
+                      content={
+                        result?.status === 'completed' || result?.status === 'failed' 
+                          ? (result?.result?.compilationOutput || result?.result?.error)
+                          : undefined
+                      }
+                      placeholder="No compilation messages"
+                      isError={!result?.result?.success}
+                      loading={isCompiling}
+                      status={result?.status}
+                    />
+                    <OutputPanel
+                      title="Program Output"
+                      content={result?.result?.programOutput}
+                      placeholder="Program hasn't been run yet"
+                      loading={isCompiling}
+                      status={result?.status}
+                    />
+                  </Stack>
+                </SimpleGrid>
+              </Stack>
+            </Container>
           </AppShell.Main>
 
-          <AppShell.Footer style={{ position: 'fixed', bottom: 0, width: '100%', zIndex: 100 }}>
+          <AppShell.Footer>
             <Footer />
           </AppShell.Footer>
         </AppShell>
