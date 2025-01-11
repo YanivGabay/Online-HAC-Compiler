@@ -62,5 +62,3 @@ build/
 tmp/
 temp/ 
 
-# Add to existing .gitignore
-src/config.js 

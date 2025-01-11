@@ -48,6 +48,3 @@ build/
 # Temporary files
 tmp/
 temp/
-
-# Add to existing .gitignore
-src/config.js
