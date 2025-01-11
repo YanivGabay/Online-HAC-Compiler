@@ -6,5 +6,8 @@ dist
 .env.local
 .DS_Store
 README.md
-# Don't ignore .env.example
-!.env.example 
+
+# Don't ignore these
+!.env.example
+!.env.production
+!.env.development 

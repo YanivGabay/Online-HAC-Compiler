@@ -24,9 +24,6 @@ jobs:
             set -e
             cd /home/deploy/online-gcc-compiler || exit 1
             git pull origin master
-            if [ ! -f "docker-compose.prod.yml" ]; then
-              echo "docker-compose.prod.yml not found"
-              exit 1
-            fi
+            ls -la frontend/.env*  # Debug: check files
             docker compose -f docker-compose.prod.yml up -d --build
             docker system prune -af
