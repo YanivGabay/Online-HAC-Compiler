@@ -7,14 +7,10 @@ import { CodeEditor } from "./components/CodeEditor";
 import { OutputPanel } from "./components/OutputPanel";
 import { Footer } from "./components/Footer";
 import { compileAndRun, CompilerType, CompilationStatus } from "./services/compilerService";
+import { codeTemplates } from './constants/codeTemplates';
 
 export default function App() {
-  const [code, setCode] = useState(`#include <iostream>
-
-int main() {
-    std::cout << "Hello, World!" << std::endl;
-    return 0;
-}`);
+  const [code, setCode] = useState(codeTemplates['g++']);
   const [stdin, setStdin] = useState('');
   const [compiler, setCompiler] = useState<CompilerType>('g++');
   const [isCompiling, setIsCompiling] = useState(false);
@@ -43,6 +39,15 @@ int main() {
     }
   };
 
+  const handleCompilerChange = (newCompiler: CompilerType) => {
+    const oldCode = code;
+    const oldCompiler = compiler;
+    if(oldCode === codeTemplates[oldCompiler]) {
+      setCode(codeTemplates[newCompiler]);
+    }
+    setCompiler(newCompiler);
+  };
+
   return (
     <>
       <ColorSchemeScript />
@@ -59,7 +64,7 @@ int main() {
           <AppShell.Header>
             <Header
               compiler={compiler}
-              onCompilerChange={setCompiler}
+              onCompilerChange={handleCompilerChange}
               onCompile={handleCompile}
               isCompiling={isCompiling}
             />
