@@ -32,7 +32,7 @@ jobs:
             cd /home/deploy/online-gcc-compiler
 
             # Ensure .env.production exists
-            if [ ! -f ".env.production" ]; then
+            if [ ! -f "./frontend/.env.production" ]; then
               echo ".env.production file is missing."
               exit 1
             fi
